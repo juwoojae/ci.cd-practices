@@ -9,6 +9,10 @@ jobs:
   Deploy:
     runs-on: ubuntu-latest #(실행할 운영체제)우분투 가장최근
     steps:
+      # Spring Boot test 하지 않기
+      - name: Build Spring Boot Project
+        run: ./gradlew clean build -x test
+
       - name: SSH(원격 접속) 로 EC2 에 접속하기
         uses: appleboy/ssh-action@v1.0.3
         with:
