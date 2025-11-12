@@ -3,7 +3,7 @@ name: Deploy To EC2
 on:
   push:
     branches:
-      - master # 이벤트성 : 메인 브렌치에 push 될떼
+      - main # 이벤트성 : 메인 브렌치에 push 될떼
 
 jobs:
   Deploy:
@@ -14,7 +14,7 @@ jobs:
         with:
           host: ${{ secrets.EC2_HOST  }} # 접속하고자  하는 컴퓨터 주소 ip
           username: ${{ secrets.EC2_USERNAME }} # 사용자 이름 ubuntu
-          key: ${{ secrets.EC2_PRIVATE_KEY }} # 키페어  pem 파일을 그대로 복사
+          key: ${{ secrets.EC2_PRIVATE_KEY }} # 키페어 pem 파일을 그대로 복사
           script: |
             cd /home/ubuntu/ci.cd-practices
             git pull origin main
