@@ -48,4 +48,4 @@ jobs:
       #어떤 배포그룹에 배포를 할것인가
       # s3 버킷에서 나와서 이런 확장자로 줄것이다
       - name: CodeDeploy 를 활용해 EC2에 프로젝트 코드를 배포하라고 명령
-        run: aws deploy create-deployment --application-name instagram-server-ex --deployment-config-name CodeDeployDefault.AllAtOnce --deployment-group-name Production-Group --s3-location bucket=instagram-server,bundleType=tgz,key=$GITHUB_SHA.tar.gz
+        run: aws deploy create-deployment --application-name instagram-server --deployment-config-name CodeDeployDefault.AllAtOnce --deployment-group-name Production-Group --s3-location bucket=instagram-server-ex,bundleType=tgz,key=$GITHUB_SHA.tar.gz
