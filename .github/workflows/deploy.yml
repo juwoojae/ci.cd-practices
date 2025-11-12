@@ -13,6 +13,8 @@ jobs:
       #  EC2 접속 후 원격 배포 실행
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          APPLICATION_PROPERTIES: ${{ secrets.APPLICATION_PROPERTIES }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
@@ -21,6 +23,7 @@ jobs:
           # exclude test 테스트 배제하기
           script: |
             cd /home/ubuntu/ci.cd-practices
+            rm -rf src/main/resources/application.yml
             git pull origin main
             chmod +x gradlew
             ./gradlew clean build -x test 
