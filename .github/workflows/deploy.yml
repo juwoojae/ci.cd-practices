@@ -29,7 +29,7 @@ jobs:
         run: ./gradlew clean build
 
       - name: 빌드된 파일 이름 변경하기
-        run: mv ./build/libs/*SNAPSHOP.jar ./project.jar
+        run: mv ./build/libs/*SNAPSHOT.jar ./project.jar
 
       # 빌드 파일을 SCP 파일 로 EC2 에 전송하기
       - name: SCP 로 EC2 에 빌드 된 파일 전송하기
