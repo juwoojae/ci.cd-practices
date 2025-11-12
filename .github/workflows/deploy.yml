@@ -10,11 +10,12 @@ jobs:
     runs-on: ubuntu-latest #(실행할 운영체제)우분투 가장최근
     steps:
       - name: SSH(원격 접속) 로 EC2 에 접속하기
-        uses: appleboy/ssh-action@v1
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST  }} # 접속하고자  하는 컴퓨터 주소 ip
           username: ${{ secrets.EC2_USERNAME }} # 사용자 이름 ubuntu
           key: ${{ secrets.EC2_PRIVATE_KEY }} # 키페어 pem 파일을 그대로 복사
+          script_stop: true
           script: |
             cd /home/ubuntu/ci.cd-practices
             git pull origin main
