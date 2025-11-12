@@ -3,26 +3,36 @@ name: Deploy To EC2
 on:
   push:
     branches:
-      - main # 이벤트성 : 메인 브렌치에 push 될떼
+      - main
 
 jobs:
   Deploy:
-    runs-on: ubuntu-latest #(실행할 운영체제)우분투 가장최근
+    runs-on: ubuntu-latest
+
     steps:
-      # Spring Boot test 하지 않기
+      # 현재 저장소 코드 체크아웃
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      #  Gradle wrapper 실행권한 추가 (윈도우 to 리눅스 환경일 때 필수임)
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # (3) Spring Boot 빌드 (테스트 제외)
       - name: Build Spring Boot Project
         run: ./gradlew clean build -x test
 
-      - name: SSH(원격 접속) 로 EC2 에 접속하기
+      # (4) EC2 접속 후 원격 배포 실행
+      - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.EC2_HOST  }} # 접속하고자  하는 컴퓨터 주소 ip
-          username: ${{ secrets.EC2_USERNAME }} # 사용자 이름 ubuntu
-          key: ${{ secrets.EC2_PRIVATE_KEY }} # 키페어 pem 파일을 그대로 복사
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
           script_stop: true
           script: |
             cd /home/ubuntu/ci.cd-practices
             git pull origin main
-            ./gradlew clean build
+            ./gradlew clean build -x test
             sudo fuser -k -n tcp 8080 || true
-            nohup java -jar build/libs/*SNAPSHOT.jar > ./output.log 2>&1 &
+            nohup java -jar build/libs/*SNAPSHOT.jar > output.log 2>&1 &
