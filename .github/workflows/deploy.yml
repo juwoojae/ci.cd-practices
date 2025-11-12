@@ -1,0 +1,23 @@
+name: Deploy To EC2
+
+on:
+  push:
+    branches:
+      - main # 이벤트성 : 메인 브렌치에 push 될떼
+
+jobs:
+  Deploy:
+    runs-on: ubuntu-latest #(실행할 운영체제)우분투 가장최근
+      - name: SSH(원격 접속) 로 EC2 에 접속하기
+      uses: appleboy/ssh-action@v1
+      with:
+        host: ${{ secrets.EC2_HOST  }} # 접속하고자  하는 컴퓨터 주소 ip
+        username: ${{ secrets.EC2_USERNAME }} # 사용자 이름 ubuntu
+        key: ${{ Secrets.EC2_USERNAME }} # 키페어
+        script_stop: true
+        script: |
+          cd /home/ubuntu/instagram-server
+          git pull origin main
+          ./gradlew clean build
+          sudo fuser -k -n tcp 8080 || true
+          nohup java -jar build/libs/*SNAPSHOT.jar > ./output.log 2>&1 &
