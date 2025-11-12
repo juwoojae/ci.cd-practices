@@ -36,29 +36,22 @@ jobs:
       - name: 빌드된 파일 이름 변경하기
         run: mv ./build/libs/*SNAPSHOT.jar ./project.jar
 
-      # 빌드 파일을 SCP 파일 로 EC2 에 전송하기
-      - name: SCP 로 EC2 에 빌드 된 파일 전송하기
-        uses: appleboy/scp-action@v0.1.7
+      - name: 압축하기
+        run: tar -czvf $GITHUB_SHA.tar.gz project.jar appspec.yml scripts
+      # S3 와 CodeDeploy 에 접근 허용
+      - name: AWS Resource 에 접근 할수있게 AWS credentials 설정
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          source: project.jar
-          target: /home/ubuntu/instagram-server/tobe # SCP 로 해당 경로로 project.jar 옮기기
-           
-      - name: SSH(원격 접속)으로 EC2에 접속 하기
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          script_stop: true
-          script: |
-            rm -rf /home/ubuntu/instagram-server/current
-            mkdir /home/ubuntu/instagram-server/current
-            mv /home/ubuntu/instagram-server/tobe/project.jar /home/ubuntu/instagram-server/current/project.jar
-            cd /home/ubuntu/instagram-server/current
-            sudo fuser -k -n tcp 8080 || true
-            nohup java -jar project.jar > ./output.log 2>&1 &
-            rm -rf /home/ubuntu/instagram-server/tobe 
+          aws-region: ap-northeast-2
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
+      - name: S3 에 프로젝트 폴더 업로드 하기
+        run: aws s3 cp --region ap-northeast-2 ./$GITHUB_SHA.tar.gz s3://instagram-server/$GITHUB_SHA.tar.gz
+
+      - name: CodeDeploy 를 활용해 EC2에 프로젝트 코드를 배포하라고 명령
+        run: aws deploy create-deployment # DeployCode 에 애플리케이션을 만들고, 배포 그룹을 만들었다. 배포를 생성하는 명령어이다
+          --application-name instagram-server # 어떤 애플리케이션에서 생성할것인가
+          --deployment-config-name CodeDeployDefault.AllAtOnce # 어떤방식으로 배포를 생성할것인가 ? AllAtOnce 한번에
+          --deployment-group-name Production #어떤 배포그룹에 배포를 할것인가
+          --s3-location bucket=instagram-server,bundleType=tgz,key=$GITHUB_SHA.tar.gz # s3 버킷에서 나와서 이런 확장자로 줄것이다

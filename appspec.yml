@@ -1,0 +1,20 @@
+version: 0.0
+os: linux
+# appspec.yml 은 CodeDeploy 가 실행될 때 필수적으로 존재해야 하는 파일이다.
+# CodeDeploy 는 이 설정 파일을 기반으로 실행한다.
+# s3 에 저장한 컨테이너 안의 데이터를 destination(EC2) 의 경로로 보내겠다는 의미이다.
+files:
+  - source: /
+    destination: /home/ubuntu/instagram-server
+
+# CodeDeploy 가 어떤 권한을 가지고 수행을 할 것인가
+permissions:
+  - object: /
+    owner: ubuntu
+    group: ubuntu
+#files 에서 build 한 것을 s3 로부터 전달 받았으면 아래의 코드로 배포를 실행한다
+hooks:
+  ApplicationStart:
+    - location: scripts/start-server.sh # shell script file 리눅스 명령어의 집합
+      timeout: 60
+      runas: ubuntu
