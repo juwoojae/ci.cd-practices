@@ -3,7 +3,7 @@ name: Deploy To EC2
 on:
   push:
     branches:
-      - main # 이벤트성 : 메인 브렌치에 push 될떼
+      - master # 이벤트성 : 메인 브렌치에 push 될떼
 
 jobs:
   Deploy:
